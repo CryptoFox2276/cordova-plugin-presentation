@@ -91,7 +91,10 @@ public class CDVPresentationPlugin extends CordovaPlugin implements DisplayManag
 		else if (action.equals("setDefaultDisplay")) {
 			LOG.d(LOG_TAG, "setDefaultDisplay");
 			return setDefaultDisplay(args,callbackContext);
-		}
+		} else if (action.equals("sendHtmlContent")) {
+      LOG.d(LOG_TAG, "sendHtmlContent");
+      return sendHtmlContent(args,callbackContext);
+    }
 		return false;
 	}
 
@@ -142,7 +145,17 @@ public class CDVPresentationPlugin extends CordovaPlugin implements DisplayManag
 		sendSessionResult(session, null, null);
 		return true;
 	}
-	
+
+	private boolean sendHtmlContent(JSONArray args, CallbackContext callbackContext) throws JSONException {
+		String param = args.getString(0);
+		String data = obj.getString("data");
+		System.out.println("****** CDVPresentationPlugin/sendHtmlContent ******");
+		PresentationSession session = new PresentationSession(getActivity(), data, callbackContext);
+		showDisplaySelectionDialog(session);
+		sendSessionResult(session, null, null);
+		return true;
+	}
+
 	/**
 	 * This method will be called when {@code session.postMessage(msg)} is called in the controlling page. {@code session} is the return value of {@code navigator.presentation.requestSession(url)}. 
 	 * 

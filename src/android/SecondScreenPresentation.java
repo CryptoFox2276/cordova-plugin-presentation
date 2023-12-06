@@ -35,6 +35,7 @@ import android.webkit.WebViewClient;
  */
 public class SecondScreenPresentation extends Presentation {
 	private static String DEFAULT_DISPLAY_URL="about:blank";
+	private static String DEFAULT_DISPLAY_HTML="<html><body><h1>This is a Second Screen Page.</h1></body></html>";
 	private WebView webView;
 	private PresentationSession session;
 	private Activity outerContext;
@@ -46,8 +47,9 @@ public class SecondScreenPresentation extends Presentation {
 	 */
 	public SecondScreenPresentation(Activity outerContext, Display display, String displayUrl) {
 		super(outerContext, display);
+    	System.out.println("****** SecondScreenPresentation ******");
 		this.outerContext = outerContext;
-		this.displayUrl = displayUrl == null? DEFAULT_DISPLAY_URL: displayUrl+"#"+display.getName();
+		// this.displayUrl = displayUrl == null? DEFAULT_DISPLAY_URL: displayUrl+"#"+display.getName();
 	}
 	
 	/**
@@ -56,8 +58,10 @@ public class SecondScreenPresentation extends Presentation {
 	 */
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+    	System.out.println("****** SecondScreenPresentation/onCreate ******");
 		setContentView(getWebView());
-		loadUrl(getDisplayUrl());
+		// loadUrl(getDisplayUrl());
+    	loadData(getDefaultHtmlContent());
 	}
 	
 	/**
@@ -74,6 +78,7 @@ public class SecondScreenPresentation extends Presentation {
 	 * @return the webview of the presenting page.
 	 */
 	public WebView getWebView() {
+    System.out.println("****** SecondScreenPresentation/getWebView ******");
 		if (webView == null) {
 			webView = new WebView(this.getContext());
 			webView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -95,6 +100,7 @@ public class SecondScreenPresentation extends Presentation {
 				}
 				@Override
 				public void onPageFinished(WebView view, String url) {
+          			System.out.println("****** SecondScreenPresentation/getWebView/onPageFinished ******");
 					view.loadUrl(NavigatorPresentationJS.RECEIVER);
 					view.loadUrl("javascript:document.dispatchEvent(new Event('deviceready'));");
 					super.onPageFinished(view, url);
@@ -103,6 +109,7 @@ public class SecondScreenPresentation extends Presentation {
 			webView.addJavascriptInterface(new Object(){
 				@JavascriptInterface
 				public void setOnPresent() {
+          			System.out.println("****** SecondScreenPresentation/getWebView/addJavascriptInterface/setOnPresent ******");
 					if(getSession() != null){
 						getSession().getActivity().runOnUiThread(new Runnable() {
 							@Override
@@ -145,12 +152,15 @@ public class SecondScreenPresentation extends Presentation {
 	 * @param session the {@link PresentationSession} to set. if <code>null</code> the default display html page will be displayed instead of the presenting page.
 	 */
 	public void setSession(PresentationSession session) {
+    	System.out.println("****** SecondScreenPresentation/setSession ******");
 		this.session = session;
 		if (session == null) {
 			loadUrl(getDisplayUrl());
+			loadData(getDefaultHtmlContent());
 		}
 		else {
 			loadUrl(session.getUrl());
+			loadData(session.getHtmlContent());
 		}
 	}
 	
@@ -174,11 +184,30 @@ public class SecondScreenPresentation extends Presentation {
 			});
 		}
 	}
-	
+
+  public void loadData(final String htmlData) {
+    System.out.println("****** SecondScreenPresentation/loadData ******");
+    if (getDisplay() != null) {
+      getOuterContext().runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          getWebView().loadData(htmlData, "text/html", null);
+        }
+      });
+    }
+  }
+
 	/**
 	 * @return the URL of the display html page
 	 */
 	public String getDisplayUrl() {
 		return displayUrl;
 	}
+
+  /**
+   * @return the URL of the display html page
+   */
+  public String getDefaultHtmlContent() {
+    return DEFAULT_DISPLAY_HTML;
+  }
 }
